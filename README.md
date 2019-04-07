@@ -21,6 +21,7 @@ Thanks for the author's (@whai362) great work!
 | ICDAR15 | 84.5      | 77.3   | 80.7          |
 | TD500   | -         | -      | 80.2          |
 | CTW1500 | -         | -      | 76            |
+
 `-` this model had been removed in my server, so I forget exact f-measure, just for reference
 
 ## Testing 
