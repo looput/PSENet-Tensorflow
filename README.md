@@ -24,18 +24,6 @@ Thanks for the author's (@whai362) great work!
 
 `-` this model had been removed in my server, so I forget exact f-measure, just for reference
 
-## Testing 
-1. Compile the PSE code
-    ```bash
-    python setup.py build_ext --inplace
-    ```
-2. Edit test config in `configuration.py` such as ***threshold***, ***image size***, ***test_dir*** is the path of your test images.(such as `/you/path/icdar2015/ch4_test_images`)
-   ```bash
-   python eval_metric.py --ma=True --train_name test --gpus='2' --lg=False
-   ```
-3. If `lg` is `True`, you can view detect result in folder `Logs/test/<run_name>/model.ckpt-399999_0/image_log`
-    ![result](ass/img_11_1.png)
-    ![result](ass/img_68_1.png)
 
 ## Training
 1. Chage to dataset to tfrecord for high performence reading. This converter support IC15,TD500,CTW1500. Default for IC15. And change ***dataset_dir*** path in `dataset_factory.py`.
@@ -54,3 +42,17 @@ Thanks for the author's (@whai362) great work!
    ```
    ![tensorboard](ass/loss.png)
    ![tensorboard](ass/image.PNG)
+
+
+## Testing 
+1. Compile the PSE code
+    ```bash
+    python setup.py build_ext --inplace
+    ```
+2. Edit test config in `configuration.py` such as ***threshold***, ***image size***, ***test_dir*** is the path of your test images.(such as `/you/path/icdar2015/ch4_test_images`)
+   ```bash
+   python eval_metric.py --ma=True --train_name test --gpus='2' --lg=False
+   ```
+3. If `lg` is `True`, you can view detect result in folder `Logs/test/<run_name>/model.ckpt-399999_0/image_log`
+    ![result](ass/img_11_1.png)
+    ![result](ass/img_68_1.png)
