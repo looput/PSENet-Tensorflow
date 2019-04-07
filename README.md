@@ -8,7 +8,7 @@ A reimplement of PSENet with tensorflow. Only trained on IC15,TD500,and CTW1500.
 - summary logging by tensorboard  
 
 ## Prerequisites
-- tensorflow == 1.8
+- tensorflow = 1.8
 - pudb(for debug)
 - pyclipper(to clip polygon)
 - skimage
