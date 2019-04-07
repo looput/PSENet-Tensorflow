@@ -49,5 +49,5 @@ A reimplement of PSENet with tensorflow. Only trained on IC15,TD500,and CTW1500.
    ```
    tensorboard --host localhost --samples_per_plugin images=500 --port 7000 --logdir Logs/train/test
    ```
-   ![tensorboard](ass/loss.PNG)
+   ![tensorboard](ass/loss.png)
    ![tensorboard](ass/image.PNG)
