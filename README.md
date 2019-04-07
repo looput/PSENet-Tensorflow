@@ -7,6 +7,8 @@ A reimplement of PSENet with tensorflow. Only trained on IC15,TD500,and CTW1500.
 - Support checkpoint restore.
 - summary logging by tensorboard  
 
+Thanks for the author's (@whai362) great work!
+
 ## Prerequisites
 - tensorflow = 1.8
 - pudb(for debug)
