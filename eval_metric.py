@@ -37,7 +37,6 @@ def _set_para(config,kn=0.55,th=0.6,avs=0.9):
     config['aver_score']=avs
 
 def main(argv=None):
-    import crash_on_ipy 
     config = TEST_CONFIG
 
     checkpoint_path = os.path.join(

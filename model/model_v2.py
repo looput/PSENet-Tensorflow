@@ -1,8 +1,8 @@
-import net.resnet_model as resnet_model
-from net.resnet_model import batch_norm
+import model.net.resnet_model as resnet_model
+from model.net.resnet_model import batch_norm
 
 import tensorflow as tf
-import tensorlayer as tl
+# import tensorlayer as tl
 from tensorflow.contrib.layers.python.layers import initializers
 
 import numpy as np

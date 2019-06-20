@@ -240,11 +240,6 @@ def main(argv=None):
             if FLAGS.use_pretrain == True:
                 restore_fn(sess)
 
-        # NOTE: if not start the queue, no data will be generate!
-        # REF: https://programtalk.com/python-examples/tensorflow.contrib.slim.prefetch_queue.prefetch_queue/
-        coord = tf.train.Coordinator()
-        threads = tf.train.start_queue_runners(coord=coord)
-
         sum_writer = tf.summary.FileWriter(
             checkpoint_path, graph=None)
 
@@ -294,7 +289,6 @@ def main(argv=None):
                     step, step/num_batches_per_epoch, loss_s/num_gpu))
             else:
                 _ = sess.run(train_op,options=run_opts)
-
 
 if __name__ == '__main__':
     tf.app.run()

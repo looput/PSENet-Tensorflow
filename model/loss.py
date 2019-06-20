@@ -6,7 +6,7 @@
 import tensorflow as tf
 
 
-from net import resnet_v1
+from .net import resnet_v1
 import configuration
 
 config=configuration.TRAIN_CONFIG

@@ -22,7 +22,8 @@ import util
 from dataset.dataloader import DataLoader
 from .model_v2 import model,model_deconv
 from PIL import Image
-from preprocessing import ssd_vgg_preprocessing
+# from preprocessing import ssd_vgg_preprocessing
+from dataset import preprocess
 from PSE_C import mylib
 from skimage.measure import label, regionprops
 
@@ -282,8 +283,8 @@ def eval_model(config, FLAGS,para_list=None,is_log=False):
         image.set_shape((None, None, 3))
         out_shape=(image_size['h'], image_size['w']) if image_size['fixed_size']==True else None
         scale=1.0 if image_size['fixed_size']==True else image_size['scale']
-        image_process, _, _, _, _ = ssd_vgg_preprocessing.preprocess_image(
-            image,scale=scale,out_shape=out_shape, is_training=False)
+        image_process= preprocess.preprocess_for_eval(
+            image,scale=scale,out_shape=out_shape)
 
         image_process = tf.expand_dims(image_process, 0)
         seg_maps, _ = model(image_process, is_training=False)

@@ -30,7 +30,7 @@ TRAIN_CONFIG={
     # dataset name
     'data_name':'icdar2015',
     'data_config':{
-        'read_num_p':1,
+        'read_num_p':2,
         'para_num_p':2,
         'pro_num_p':4,
         'buffer_size':100,
@@ -48,7 +48,7 @@ TEST_CONFIG ={
 
     'log_dir': 'Logs',
     # TODO your path here
-    'test_dir': './icdar2015/ch4_test_images',
+    'test_dir': '/workspace/datasets/icdar2015/ch4_test_images',
 
     'n':len(TRAIN_CONFIG['rate'])+1,
     'threshold_kernel': 0.6,

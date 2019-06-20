@@ -10,23 +10,27 @@ A reimplement of PSENet with tensorflow. Only trained on IC15,TD500,and CTW1500.
 Thanks for the author's (@whai362) great work!
 
 ## Prerequisites
+pip install -r requriment.txt
 - tensorflow = 1.8
 - pudb(for debug)
 - pyclipper(to clip polygon)
 - skimage
+- Polygon3
+- Cython
+
 
 ## Result(Train only with the corresponding dataset, no extra data)
 | Dataset | precision | recall | F-measure (%) |
 | ------- | --------- | ------ | ------------- |
 | ICDAR15 | 84.5      | 77.3   | 80.7          |
-| TD500   | -         | -      | 80.2          |
-| CTW1500 | -         | -      | 76            |
+| TD500   | -         | -      | 80.2(?)       |
+| CTW1500 | -         | -      | 76(?)         |
 
 `-` this model had been removed in my server, so I forget exact f-measure, just for reference
 
 
 ## Training
-1. Chage to dataset to tfrecord for high performence reading. This converter support IC15,TD500,CTW1500. Default for IC15. And change ***dataset_dir*** path in `dataset_factory.py`.
+1. Converting the dataset to tfrecord for high performence reading. This converter support IC15,TD500,CTW1500. Default for IC15. And you need to change ***dataset_dir*** path in `dataset_factory.py`.
    ```bash
     cd dataset
     python write_tfrecord.py --data-folder 'your path here'
@@ -34,6 +38,7 @@ Thanks for the author's (@whai362) great work!
 2. To use `ImageNet` Pretrained model, download the model to `Logs/model` from [model](http://download.tensorflow.org/models/official/20181001_resnet/checkpoints/resnet_imagenet_v1_fp32_20181001.tar.gz)
 3. Train the model, you need edit `configuration.py` to adjust the patameter of trianing such as bactch size,learning rate.
    ```
+   mkdir Logs/train
    python train_PSENet.py --run_name test --restore=True --use_pretrain=True --gpus '0' --ss=10 --se=10 --about=''
    ```
 4. you can monitor the progress of training by tensorboard

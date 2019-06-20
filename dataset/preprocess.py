@@ -6,18 +6,46 @@ from PIL import Image
 import util
 import cv2
 import random
-import torchvision.transforms as transforms
+# import torchvision.transforms as transforms
 import torch
 import pyclipper
 import Polygon as plg
 import tensorflow as tf
-from preprocessing.ssd_vgg_preprocessing import tf_image_whitened
 
 from configuration import TRAIN_CONFIG
 config=TRAIN_CONFIG
 random.seed(123456)
 
+_R_MEAN, _G_MEAN, _B_MEAN=123., 117., 104.
+def tf_image_whitened(image, means=[_R_MEAN, _G_MEAN, _B_MEAN]):
+    """Subtracts the given means from each image channel.
 
+    Returns:
+        the centered image.
+    """
+    if image.get_shape().ndims != 3:
+        raise ValueError('Input must be of size [height, width, C>0]')
+    num_channels = image.get_shape().as_list()[-1]
+    if len(means) != num_channels:
+        raise ValueError('len(means) must match the number of channels')
+
+    mean = tf.constant(means, dtype=image.dtype)
+    image = image - mean
+    return image
+
+
+def tf_image_unwhitened(image, means=[_R_MEAN, _G_MEAN, _B_MEAN], to_int=True):
+    """Re-convert to original image distribution, and convert to int if
+    necessary.
+
+    Returns:
+      Centered image.
+    """
+    mean = tf.constant(means, dtype=image.dtype)
+    image = image + mean
+    if to_int:
+        image = tf.cast(image, tf.int32)
+    return image
 
 def random_horizontal_flip(imgs):
     if random.random() < 0.5:
@@ -169,9 +197,8 @@ def process_data_np(image, label, bboxes):
 
     img = Image.fromarray(img)
     # img = img.convert('RGB')
-    img = transforms.ColorJitter(brightness = 32.0 / 255, saturation = 0.5)(img)
+    # img = transforms.ColorJitter(brightness = 32.0 / 255, saturation = 0.5)(img)
     img=np.asarray(img)
-
 
     return img,gt_text,gt_kernals,training_mask
 
@@ -193,6 +220,9 @@ def process_data_tf(image, label, polys, num_points, bboxes):
     gt_text = tf.to_float(gt_text)
     gt_kernals = tf.to_float(gt_kernals)
     training_mask = tf.to_float(training_mask)
+
+    img = tf.image.random_brightness(img, max_delta=32. / 255.)
+    img = tf.image.random_saturation(img, lower=0.5, upper=1.5)
 
     img = tf_image_whitened(img, [123., 117., 104.])
 
@@ -291,50 +321,58 @@ def process_td_tf(image, label, polys, num_points, bboxes):
 
     return img, gt_text, training_mask
 
-# def preprocess_for_eval(image, labels, bboxes, xs, ys,
-#                         scale=1.0,out_shape=None, data_format='NHWC',
-#                         resize=Resize.WARP_RESIZE,
-#                         do_resize=True,
-#                         scope='ssd_preprocessing_train'):
-#     """Preprocess an image for evaluation.
 
-#     Args:
-#         image: A `Tensor` representing an image of arbitrary size.
-#         out_shape: Output shape after pre-processing (if resize != None)
-#         resize: Resize strategy.
+def resize_image(image, size,
+                 method=tf.image.ResizeMethod.BILINEAR,
+                 align_corners=False):
+    """Resize an image and bounding boxes.
+    """
+    # Resize image.
+    with tf.name_scope('resize_image'):
+        height, width, channels = image.get_shape().as_list()
+        image = tf.expand_dims(image, 0)
+        image = tf.image.resize_images(image, size,
+                                       method, align_corners)
+        image = tf.reshape(image, tf.stack([size[0], size[1], channels]))
+        return image
 
-#     Returns:
-#         A preprocessed image.
-#     """
-#     with tf.name_scope(scope):
-#         if image.get_shape().ndims != 3:
-#             raise ValueError('Input must be of size [height, width, C>0]')
+def preprocess_for_eval(image,scale=1.0,out_shape=None, data_format='NHWC',
+                        scope='preprocess_eval'):
+    """Preprocess an image for evaluation.
 
-#         image = tf.to_float(image)
-#         image = tf_image_whitened(image, [_R_MEAN, _G_MEAN, _B_MEAN])
+    Args:
+        image: A `Tensor` representing an image of arbitrary size.
+        out_shape: Output shape after pre-processing (if resize != None)
+        resize: Resize strategy.
 
-#         if do_resize:
-#             if resize == Resize.NONE:
-#                 pass
-#             else:
-#                 if out_shape is None:
-#                     i_shape=tf.to_float(tf.shape(image))
-#                     shape=[tf.cast(i_shape[0]*scale,tf.int32),tf.cast(i_shape[1]*scale,tf.int32)]
-#                     image = tf_image.resize_image(image, shape,
-#                                                 method=tf.image.ResizeMethod.BILINEAR,
-#                                                 align_corners=False)
-#                     image_shape=tf.shape(image)
-#                     image_h,image_w=image_shape[0],image_shape[1]
-#                     image_h=tf.cast(tf.rint(image_h/32)*32,tf.int32)
-#                     image_w=tf.cast(tf.rint(image_w/32)*32,tf.int32)
-#                     image = tf_image.resize_image(
-#                         image, [image_h, image_w], method=tf.image.ResizeMethod.BILINEAR, align_corners=False)
-#                 else:
-#                     image = tf_image.resize_image(image, out_shape,
-#                                                 method=tf.image.ResizeMethod.BILINEAR,
-#                                                 align_corners=False)
+    Returns:
+        A preprocessed image.
+    """
+    with tf.name_scope(scope):
+        if image.get_shape().ndims != 3:
+            raise ValueError('Input must be of size [height, width, C>0]')
 
-#         # Image data format.
-#         if data_format == 'NCHW':
-#             image = tf.transpose(image, perm=(2, 0, 1))
-#         return image, labels, bboxes, xs, ys
+        image = tf.to_float(image)
+        image = tf_image_whitened(image, [_R_MEAN, _G_MEAN, _B_MEAN])
+
+        if out_shape is None:
+            i_shape=tf.to_float(tf.shape(image))
+            shape=[tf.cast(i_shape[0]*scale,tf.int32),tf.cast(i_shape[1]*scale,tf.int32)]
+            image = resize_image(image, shape,
+                                        method=tf.image.ResizeMethod.BILINEAR,
+                                        align_corners=False)
+            image_shape=tf.shape(image)
+            image_h,image_w=image_shape[0],image_shape[1]
+            image_h=tf.cast(tf.rint(image_h/32)*32,tf.int32)
+            image_w=tf.cast(tf.rint(image_w/32)*32,tf.int32)
+            image = resize_image(
+                image, [image_h, image_w], method=tf.image.ResizeMethod.BILINEAR, align_corners=False)
+        else:
+            image = resize_image(image, out_shape,
+                                        method=tf.image.ResizeMethod.BILINEAR,
+                                        align_corners=False)
+
+        # Image data format.
+        if data_format == 'NCHW':
+            image = tf.transpose(image, perm=(2, 0, 1))
+        return image
