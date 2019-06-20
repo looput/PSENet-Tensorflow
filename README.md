@@ -10,7 +10,7 @@ A reimplement of PSENet with tensorflow. Only trained on IC15,TD500,and CTW1500.
 Thanks for the author's (@whai362) great work!
 
 ## Prerequisites
-pip install -r requriment.txt
+`pip install -r requriment.txt`
 - tensorflow = 1.8
 - pudb(for debug)
 - pyclipper(to clip polygon)
